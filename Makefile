@@ -1,14 +1,14 @@
 CC=cc
 CFLAGS=-O3
 LIBS=-lcurses
-OUT=miv
+OUT=druid
 COMP=$(CC) $(CFLAGS) -c
 
 all: miv.o
 	$(CC) *.o $(LIBS) -o $(OUT)
 
-miv.o: miv.c
-	$(COMP) miv.c
+miv.o: druid.c
+	$(COMP) druid.c
 
 clean:
 	rm *.o
