@@ -1,5 +1,5 @@
 CC=cc
-CFLAGS=-O3
+CFLAGS=-O1
 LIBS=-lcurses
 OUT=druid
 COMP=$(CC) $(CFLAGS) -c

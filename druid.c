@@ -12,10 +12,8 @@
 #define access _access
 #endif
 
-
 #define CTRL(x) ((x) & 0x1f)
-
-#define BUFFSIZE (2048 * 2048)
+#define BUFFSIZE (2048 * 1024)
 
 unsigned int
 newlsBefore(char *t, unsigned int pos)
@@ -36,6 +34,24 @@ lenPrevLines(char *t, unsigned int pos)
   return c + 1;
 }
 
+unsigned int
+lenUntilNextLn(char *text, unsigned int pos)
+{
+  unsigned int c = 0;
+  while (text[pos + c] != '\n')
+    ++c;
+  return c;
+}
+
+unsigned int
+lenUntilPrevLn(char *text, unsigned int pos)
+{
+  unsigned int c = 0;
+  while (text[pos - c] != '\n')
+    ++c;
+  return c;
+}
+
 void
 writeFile(char *text, char *path)
 {
@@ -48,6 +64,30 @@ writeFile(char *text, char *path)
   fprintf(fp, "%s", temp);
   fclose(fp);
   free(temp);
+}
+
+void
+insertAt(char *text, char c, unsigned int pos)
+{
+  unsigned int i;
+  char temp = text[pos];
+  for(i = BUFFSIZE - 1; i >= pos + 1; --i)
+  {
+    text[i + 1] = text[i];
+  }
+  text[i] = c;
+  text[i + 1] = temp;
+}
+
+void
+removeAt(char *text, unsigned int pos)
+{
+  unsigned int i;
+  /* Copy next element value to current element */
+  for(i = pos; i < BUFFSIZE - 1; ++i)
+  {
+    text[i] = text[i + 1];
+  }
 }
 
 int
@@ -64,6 +104,7 @@ main(int argc, char **argv)
   raw();
   keypad(stdscr, TRUE);
   noecho();
+  /* scrollok(stdscr, TRUE); */
   int run = 1;
   text[0] = '\n';
   while (run) {
@@ -77,17 +118,27 @@ main(int argc, char **argv)
     ch = getch();
     switch (ch) {
     case KEY_LEFT:
-      --pos;
+      if (pos != 0)
+        --pos;
       break;
     case KEY_RIGHT:
-      ++pos;
+      if (text[pos + 1] != 0)
+        ++pos;
+      break;
+    case KEY_DOWN:
+      pos += lenUntilNextLn(text, pos) + lenUntilPrevLn(text, pos);
+      break;
+    case KEY_UP:
+      text[strlen(text)] = '\n';
+      pos -= lenUntilNextLn(text, pos) + lenUntilPrevLn(text, pos);
+      text[strlen(text) - 1] = 0;
       break;
     case KEY_BACKSPACE:
-      text[pos - 1] = 0;
+      removeAt(text, pos - 1);
       --pos;
       break;
     case KEY_ENTER:
-      text[pos] = '\n';
+      insertAt(text, '\n', pos);
       break;
     case CTRL('c'):
       run = 0;
@@ -96,14 +147,13 @@ main(int argc, char **argv)
       writeFile(text, argv[1]);
       break;
     default:
-      text[pos] = ch;
+      insertAt(text, ch, pos);
       ++pos;
       break;
     }
   }
   getch();
   endwin();
-  printf("\n");
   free(text);
 
   return 0;
