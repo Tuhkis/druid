@@ -13,7 +13,7 @@
 #endif
 
 #define CTRL(x) ((x) & 0x1f)
-#define BUFFSIZE (2048 * 1024)
+#define BUFFSIZE (1024 * 1024)
 
 unsigned int
 newlsBefore(char *t, unsigned int pos)
@@ -122,8 +122,7 @@ main(int argc, char **argv)
         --pos;
       break;
     case KEY_RIGHT:
-      if (text[pos + 1] != 0)
-        ++pos;
+      ++pos;
       break;
     case KEY_DOWN:
       pos += lenUntilNextLn(text, pos) + lenUntilPrevLn(text, pos);
@@ -134,8 +133,10 @@ main(int argc, char **argv)
       text[strlen(text) - 1] = 0;
       break;
     case KEY_BACKSPACE:
-      removeAt(text, pos - 1);
-      --pos;
+      if (pos != 1) {
+        removeAt(text, pos - 1);
+        --pos;
+      }
       break;
     case KEY_ENTER:
       insertAt(text, '\n', pos);
