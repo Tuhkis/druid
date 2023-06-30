@@ -12,6 +12,8 @@
 #define access _access
 #endif
 
+#include "config.h"
+
 #define CTRL(x) ((x) & 0x1f)
 #define BUFFSIZE (1024 * 1024)
 
@@ -47,7 +49,7 @@ unsigned int
 lenUntilPrevLn(char *text, unsigned int pos)
 {
   unsigned int c = 0;
-  while (text[pos - c] != '\n')
+  while (text[pos - 1 - c] != '\n')
     ++c;
   return c;
 }
@@ -113,7 +115,7 @@ main(int argc, char **argv)
     printw("%s", text);
     move(newlsBefore(text, pos) + 1, pos - lenPrevLines(text, pos));
     refresh();
-    /** INPUT */
+    /* INPUT */
     int ch = 0;
     ch = getch();
     switch (ch) {
@@ -124,6 +126,7 @@ main(int argc, char **argv)
     case KEY_RIGHT:
       ++pos;
       break;
+#ifdef MOVE_UP_AND_DOWN
     case KEY_DOWN:
       pos += lenUntilNextLn(text, pos) + lenUntilPrevLn(text, pos);
       break;
@@ -132,6 +135,7 @@ main(int argc, char **argv)
       pos -= lenUntilNextLn(text, pos) + lenUntilPrevLn(text, pos);
       text[strlen(text) - 1] = 0;
       break;
+#endif // MOVE_UP_AND_DOWN
     case KEY_BACKSPACE:
       if (pos != 1) {
         removeAt(text, pos - 1);
